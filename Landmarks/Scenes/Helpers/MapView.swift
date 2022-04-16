@@ -9,23 +9,40 @@ import SwiftUI
 import MapKit
 
 struct MapView: View {
-    var cooldinate: CLLocationCoordinate2D
-    @State private var region = MKCoordinateRegion()
+    var coordinate: CLLocationCoordinate2D
     
-    var body: some View {
-        Map(coordinateRegion: $region)
-            .onAppear {
-                setRegion(cooldinate)
-            }
+    @AppStorage("MapView.zoom")
+    private var zoom: Zoom = .medium
+    
+    enum Zoom: String, CaseIterable, Identifiable {
+        case near = "Near"
+        case medium = "Medium"
+        case far = "Far"
+        
+        var id: Zoom {
+            return self
+        }
     }
     
-    private func setRegion(_ cooldinate: CLLocationCoordinate2D) {
-        region = MKCoordinateRegion(center: cooldinate, span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2))
+    var delta: CLLocationDegrees {
+        switch zoom {
+        case .near: return 0.02
+        case .medium: return 0.2
+        case .far: return 2
+        }
+    }
+    
+    var body: some View {
+        Map(coordinateRegion: .constant(region))
+    }
+    
+    var region: MKCoordinateRegion {
+        MKCoordinateRegion(center: coordinate, span: MKCoordinateSpan(latitudeDelta: delta, longitudeDelta: delta))
     }
 }
 
 struct MapView_Previews: PreviewProvider {
     static var previews: some View {
-        MapView(cooldinate: CLLocationCoordinate2D(latitude: 37.4855049, longitude: 126.9299626))
+        MapView(coordinate: CLLocationCoordinate2D(latitude: 37.4855049, longitude: 126.9299626))
     }
 }
